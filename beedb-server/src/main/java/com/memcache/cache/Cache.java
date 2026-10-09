@@ -1,0 +1,63 @@
+package com.memcache.cache;
+
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.Map;
+import java.util.stream.Collectors;
+
+
+public class Cache {
+    
+    private ConcurrentHashMap<String, CacheItem> map = new ConcurrentHashMap<>();
+    public Cache() {
+    }
+
+    public CacheItem get(String key) {
+        if (map.containsKey(key)) {
+            CacheItem item = map.get(key);
+            if (!item.isInfiniteExpiry() && System.currentTimeMillis() >= item.getExpiresAt()) {
+                map.remove(key);
+                return null;
+            }
+            return item;
+        }
+        return null;
+    }
+
+    public void put(String key, byte[] value, int flags, long expiry) {
+        map.put(key, new CacheItem(key, value, flags, expiry));
+    }
+
+    public boolean remove(String key) {
+        if(map.containsKey(key)){
+            map.remove(key);
+            return true;
+        }
+        return false;
+    }
+
+    public void set(CacheItem item) {
+        map.put(item.getKey(), item);
+    }
+
+    public boolean containsKey(String key) {
+        return this.get(key) != null;
+    }
+
+    public Map<String, CacheItem> getState(){
+        long now = System.currentTimeMillis();
+        return map.entrySet().stream()
+                .filter(entry -> entry.getValue().isInfiniteExpiry() || entry.getValue().getExpiresAt() > now)
+                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+    }
+
+    public int size(){
+        // count only unexpired keys when this method is called
+        Map<String, CacheItem> cacheState = getState();
+        return cacheState.size();
+    }
+    public void restoreState(Map<String , CacheItem> state){
+        map.clear();
+        map.putAll(state);
+    }
+
+}
