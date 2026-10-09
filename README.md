@@ -449,10 +449,6 @@ With the core replication, persistence, recovery, testing, and observability wor
 - Study admission control and adaptive backpressure under mixed workloads.
 - Evaluate online cluster upgrades and rolling-version compatibility between nodes.
 
-## License
-
-Distributed under the MIT License. See [`LICENSE`](LICENSE) for details.
-
 ## Author
 
 **Pragati Chaudhary** · [GitHub](https://github.com/Pragati4566)
